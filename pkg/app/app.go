@@ -17,21 +17,26 @@ func NewWrapper(c *gin.Context) *Wrapper {
 
 func (w Wrapper) OK() {
 	w.Ctx.JSON(200, Result{
-		Code: 0,
+		Code: 200,
 		Msg:  "ok",
 		Data: nil,
 	})
 }
 func (w Wrapper) Success(data interface{}) {
 	w.Ctx.JSON(200, Result{
-		Code: 0,
+		Code: 200,
 		Msg:  "success",
 		Data: data,
 	})
 }
-func (w Wrapper) Error(msg string) {
+func (w Wrapper) Error(msg string, code ...int) {
+	statusCode := 500 // 默认状态码
+	if len(code) > 0 {
+		statusCode = code[0]
+	}
+
 	w.Ctx.JSON(200, Result{
-		Code: -1,
+		Code: statusCode,
 		Msg:  msg,
 		Data: nil,
 	})

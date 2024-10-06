@@ -7,12 +7,10 @@ import (
 )
 
 type config struct {
-	Dsn         string `yaml:"dsn"`
-	JWTSecret   string `yaml:"jwtSecret"`
-	Port        int    `yaml:"port"`
-	WxAppID     string `yaml:"wxAppID"`
-	WxAppSecret string `yaml:"wxAppSecret"`
-	UploadDir   string `yaml:"uploadDir"`
+	Dsn       string `yaml:"dsn"`
+	JWTSecret string `yaml:"jwtSecret"`
+	Port      int    `yaml:"port"`
+	UploadDir string `yaml:"uploadDir"`
 }
 
 var Conf config

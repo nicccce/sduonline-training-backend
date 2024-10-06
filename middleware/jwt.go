@@ -17,12 +17,12 @@ func JWT(minRoleID int) gin.HandlerFunc {
 		}
 		claims, err := util.ParseJWT(authHeader)
 		if err != nil {
-			aw.Error("该接口需要登录")
+			aw.Error("该接口需要登录", 403)
 			aw.Ctx.Abort()
 			return
 		}
 		if claims.RoleID < minRoleID {
-			aw.Error(fmt.Sprintf("该接口需要角色大于或等于：%v（请尝试退出后重登录）", minRoleID))
+			aw.Error(fmt.Sprintf("该接口需要角色大于或等于：%v（请尝试退出后重登录）", minRoleID), 403)
 			aw.Ctx.Abort()
 			return
 		}

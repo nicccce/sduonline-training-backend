@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -24,7 +25,7 @@ func Setup() {
 }
 
 func Database_initialization() error {
-	/*sqlDB, err := DB.DB()
+	sqlDB, err := DB.DB()
 	rows, err := sqlDB.Query("SHOW TABLES")
 	if err != nil {
 		return err
@@ -50,41 +51,9 @@ func Database_initialization() error {
 		return err
 	}
 
-	if err := DB.AutoMigrate(&SectionPermission{}); err != nil {
+	if err := DB.AutoMigrate(&User{}); err != nil {
 		return err
 	}
-
-	if err := DB.AutoMigrate(&WebLogin{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Question{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Answer{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Application{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Department{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Section{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Config{}); err != nil {
-		return err
-	}
-
-	if err := DB.AutoMigrate(&Interview{}); err != nil {
-		return err
-	}*/
 
 	return nil
 }

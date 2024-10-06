@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"sduonline-training-backend/pkg/conf"
 )
 
 type Code2SessionResp struct {
@@ -21,8 +20,6 @@ func GetCode2Session(code string) (*Code2SessionResp, error) {
 	_, err := client.R().SetResult(&resp).
 		ForceContentType("application/json").
 		SetQueryParams(map[string]string{
-			"appid":      conf.Conf.WxAppID,
-			"secret":     conf.Conf.WxAppSecret,
 			"js_code":    code,
 			"grant_type": "authorization_code",
 		}).Get("https://api.weixin.qq.com/sns/jscode2session")
