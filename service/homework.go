@@ -56,25 +56,19 @@ func (service HomeworkService) DisplayHomework(c *gin.Context) {
 func (service *HomeworkService) UploadHomework(c *gin.Context) {
 	aw := app.NewWrapper(c)
 	uc := util.ExtractUserClaims(c)
-
 	var req HomeworkDTO
 	if err := c.ShouldBind(&req); err != nil {
 		aw.Error(err.Error())
 		return
 	}
-
 	if homeworkModel.CheckHomeworkExistence(uc.UserID, req.TaskID) {
 		aw.Error("不可重复上传", 403)
 		return
 	}
-
-	// 验证文件和路径数量一致
 	if len(req.Files) != len(req.RelativePaths) {
 		aw.Error("files and relative_paths count mismatch")
 		return
 	}
-
-	// 获取学生ID并验证用户权限
 	user := userModel.FindUserByID(uc.UserID)
 	req.StudentID = user.StudentID
 
@@ -86,8 +80,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 		Note:        req.Note,
 		Display:     false,
 	}
-
-	// 使用事务确保一致性
 	tx := homeworkModel.Tx.Begin()
 	homework.HomeworkID = uuid.New().String()
 	if homework.Note == nil {
@@ -99,7 +91,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 		tx.Rollback()
 		return
 	}
-
 	for i, file := range req.Files {
 		relativePath := filepath.Clean(req.RelativePaths[i])
 		if strings.Contains(relativePath, "..") {
@@ -108,7 +99,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			tx.Rollback()
 			return
 		}
-
 		savePath := filepath.Join(conf.Conf.UploadDir, homework.HomeworkID, relativePath)
 		if err := os.MkdirAll(filepath.Dir(savePath), 0755); err != nil {
 			aw.Error(err.Error())
@@ -116,7 +106,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			tx.Rollback()
 			return
 		}
-
 		uploadedFile, err := file.Open()
 		if err != nil {
 			aw.Error(err.Error())
@@ -125,8 +114,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			return
 		}
 		defer uploadedFile.Close()
-
-		// 验证文件大小和类型
 		const MaxFileSize = 10 << 21 // 10 MB
 		if file.Size > MaxFileSize {
 			aw.Error("file size exceeds limit")
@@ -134,7 +121,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			tx.Rollback()
 			return
 		}
-
 		/*allowedTypes := []string{"application/pdf", "image/jpeg", "image/png"}
 		fileType := file.Header.Get("Content-Type")
 		if !contains(allowedTypes, fileType) {
@@ -142,7 +128,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			tx.Rollback()
 			return
 		}*/
-
 		fileData, err := io.ReadAll(uploadedFile)
 		if err != nil {
 			aw.Error(err.Error())
@@ -150,7 +135,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			tx.Rollback()
 			return
 		}
-
 		if err := os.WriteFile(savePath, fileData, 0644); err != nil {
 			aw.Error(err.Error())
 			DeleteHomeworkFile(homework.HomeworkID)
@@ -158,7 +142,6 @@ func (service *HomeworkService) UploadHomework(c *gin.Context) {
 			return
 		}
 	}
-
 	tx.Commit()
 	aw.OK()
 }
