@@ -3,8 +3,8 @@ package model
 import "gorm.io/gorm"
 
 type Task struct {
-	ID       int    `json:"id" binding:"-"`
-	Name     string `json:"name" binding:"required"`
+	ID       int    `json:"tid" binding:"-"`
+	Name     string `json:"tname" binding:"required"`
 	Content  string `json:"content" binding:"required"`
 	DeadLine string `json:"ddl" binding:"required"`
 }

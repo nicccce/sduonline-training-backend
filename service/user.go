@@ -17,6 +17,10 @@ type UserVO struct {
 	model.UserInfo
 	Token *string `json:"token,omitempty"`
 }
+type UserHomeworkVO struct {
+	UserVO
+	Homeworks []HomeworkVO `json:"homeworks"`
+}
 
 func (receiver UserService) TestGetJWT(c *gin.Context) {
 	aw := app.NewWrapper(c)
@@ -113,10 +117,78 @@ func (receiver UserService) DeleteUser(c *gin.Context) {
 		return
 	}
 	userClaim := util.ExtractUserClaims(c)
-	if userClaim.RoleID < 1 && user.StudentID != studentID {
+	if userClaim.RoleID <= 1 && user.ID != userClaim.UserID {
 		aw.Error("无权限", 403)
+		return
+	}
+	if user.RoleID > 1 {
+		aw.Error("无权限", 403)
+		return
+	}
+	studentIDs, err := homeworkModel.GetHomeworkIDsByStudentID(studentID)
+	if err != nil {
+		aw.Error(err.Error())
+	}
+	for _, studentID := range studentIDs {
+		err = DeleteHomeworkByHomeworkID(studentID)
+	}
+	if err != nil {
+		aw.Error(err.Error())
 		return
 	}
 	userModel.DeleteUser(user)
 	aw.OK()
+}
+func (receiver UserService) getUserByStudentID(studentID string, userHomework *UserHomeworkVO) error {
+	user := userModel.FindUserByStudentID(studentID)
+	userHomework.UserVO = UserVO{
+		ID:       user.ID,
+		RoleID:   user.RoleID,
+		UserInfo: user.UserInfo,
+	}
+	homeworks, err := homeworkModel.GetHomeworksByStudentID(studentID)
+	if err != nil {
+		return err
+	}
+	var homeworkDTOs []HomeworkVO
+	for _, homework := range homeworks {
+		homeworkDTO := HomeworkVO{
+			HomeworkID:  homework.HomeworkID,
+			StudentID:   homework.StudentID,
+			TaskID:      homework.TaskID,
+			Title:       homework.Title,
+			Description: homework.Description,
+			Display:     homework.Display,
+			CreatedAt:   homework.CreatedAt,
+			Note:        homework.Note,
+		}
+
+		homeworkDTOs = append(homeworkDTOs, homeworkDTO)
+	}
+	userHomework.Homeworks = homeworkDTOs
+	return nil
+}
+func (receiver UserService) GetUser(c *gin.Context) {
+	aw := app.NewWrapper(c)
+	uc := util.ExtractUserClaims(c)
+	var userHomework UserHomeworkVO
+	if err := receiver.getUserByStudentID(userModel.FindUserByID(uc.UserID).StudentID, &userHomework); err != nil {
+		aw.Error(err.Error())
+		return
+	}
+	aw.Success(userHomework)
+}
+func (receiver UserService) GetUsers(c *gin.Context) {
+	aw := app.NewWrapper(c)
+	userHomeworks := []UserHomeworkVO{}
+	users := userModel.FindAllUsers()
+	for _, user := range users {
+		var userHomework UserHomeworkVO
+		if err := receiver.getUserByStudentID(user.StudentID, &userHomework); err != nil {
+			aw.Error(err.Error())
+			return
+		}
+		userHomeworks = append(userHomeworks, userHomework)
+	}
+	aw.Success(userHomeworks)
 }

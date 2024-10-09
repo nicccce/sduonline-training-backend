@@ -16,7 +16,7 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
-	engine.Use(gin.Logger())
+	//engine.Use(gin.Logger())
 	engine.Use(nice.Recovery(func(c *gin.Context, err interface{}) {
 		aw := app.NewWrapper(c)
 		aw.Error("Internal error, please try again: " + fmt.Sprintf("%v", err))
